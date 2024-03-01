@@ -1,5 +1,5 @@
 CC = g++
-CPP_FLAGS = -std=c++20 -Wall -Wextra -Werror
+CPP_FLAGS = -std=c++20 -g -Wall -Wextra #-Werror
 
 SRC_DIR = src
 SRC = $(wildcard $(SRC_DIR)/*.cpp)
