@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <iostream>
 
+#include "array_exception.h"
+
 // Структура данных – кольцевая, односвязная, на базе адресных
 // указателей, с использованием фиктивного элемента.
 
@@ -24,9 +26,7 @@ public:
     /**
      * @brief Конструтор по умолчанию
     */
-    List() { 
-        std::cout << "I am a constructor!\n";
-        nil.next = &nil; }
+    List() { nil.next = &nil; }
 
     /**
      * @brief Конструктор копирования
@@ -46,7 +46,7 @@ public:
     /**
      * @brief Проверка списка на пустоту
     */
-    bool isEmpty() const;
+    bool is_empty() const;
 
     /**
      * @brief Проверка наличия заданного значения
@@ -66,7 +66,7 @@ public:
     /**
      * @brief Получение позиции в списке для заданного значения
     */
-    int indexOf(const T& value) const;
+    int index_of(const T& value) const;
 
     /**
      * @brief Включение нового значения в конец списка
@@ -76,7 +76,7 @@ public:
     /**
      * @brief Включение нового значения в позицию с заданным номером
     */
-    void insert(int index, const T& value);
+    bool insert(int index, const T& value);
 
     /**
      * @brief Удаление заданного значения из списка
@@ -86,7 +86,7 @@ public:
     /**
      * @brief Удаление значения из позиции с заданным номером
     */
-    bool removeAt(int index);
+    bool remove_at(int index);
 
     /**
      * @brief Вывод на экран последовательности значений
@@ -107,38 +107,55 @@ public:
         /**
          * @brief Конструктор
         */
-        Iterator(const List<T>& l) : list(l) {}
+        Iterator(const List<T>& l) : list(l) {
+            current = l.nil.next;
+        }
+
+        Iterator(const List<T>& l, Node *node) : list(l), current(node) {}
 
         /**
          * @brief Оператор сравнения итераторов на равенство
         */
-        bool operator==(const Iterator& other) const;
+        bool operator==(const Iterator& other) const {
+            return current == other.current;
+        }
 
         /**
          * @brief Оператор сравнения итераторов на неравенство
         */
-        bool operator!=(const Iterator& other) const;
+        bool operator!=(const Iterator& other) const {
+            return current != other.current;
+        }
 
         /**
          * @brief Оператор разыменования итератора
         */
-        T& operator*() const;
+        T& operator*() const {
+            return current->data;
+        }
 
         /**
          * @brief Оператор инкремента итератора (prefix version)
         */
-        Iterator& operator++();
+        Iterator& operator++() {
+            current = current->next;
+            return *this;
+        }
     };
 
     /**
      * @brief Возвращение прямого итератора, указывающего на первый элемент списка
     */
-    Iterator begin() const;
+    Iterator begin() const {
+        return Iterator(*this);
+    }
 
     /**
      * @brief Возвращение "неустановленного" прямого итератора
     */
-    Iterator end() const;
+    Iterator end() {
+        return Iterator(*this, &nil);
+    }
 };
 
 template <typename T>
@@ -160,7 +177,7 @@ void List<T>::clear() {
     Node *p = nil.next;
     while (p != &nil) {
         Node *next_node = p->next;
-        free(p);
+        delete p;
         p = next_node;
     }
 
@@ -169,7 +186,7 @@ void List<T>::clear() {
 }
 
 template <typename T>
-bool List<T>::isEmpty() const {
+bool List<T>::is_empty() const {
     return size == 0;
 }
 
@@ -189,8 +206,9 @@ bool List<T>::contains(const T& value) const {
 
 template <typename T>
 T List<T>::get(int index) {
-    // if index < 0 or index > size throw exception
-    // don't remember how to
+    if (index < 0 || index >= size) {
+        throw Array_exception("Index out of bounds");
+    }
 
     Node *p = nil.next;
     for (int i = 0; i < index; ++i) {
@@ -217,7 +235,7 @@ bool List<T>::set(int index, const T& value) {
 }
 
 template <typename T>
-int List<T>::indexOf(const T& value) const {
+int List<T>::index_of(const T& value) const {
     Node *p = nil.next;
     int i = 0;
     while (p->data != value && p != &nil) {
@@ -248,9 +266,10 @@ void List<T>::append(const T& value) {
 }
 
 template <typename T>
-void List<T>::insert(int index, const T& value) {
-    // if index < 0 or index > size throw exception
-    // don't remember how to
+bool List<T>::insert(int index, const T& value) {
+    if (index < 0 || index > size) {
+        return false;
+    }
 
     Node *p = nil.next;
     Node *prev = &nil;
@@ -265,6 +284,8 @@ void List<T>::insert(int index, const T& value) {
     new_node->next = p;
 
     ++size;
+
+    return true;
 }
 
 template <typename T>
@@ -278,7 +299,7 @@ bool List<T>::remove(const T& value) {
 
     if (p != &nil) {
         prev->next = p->next;
-        free(p);
+        delete p;
         --size;
         return true;
     } else {
@@ -287,7 +308,7 @@ bool List<T>::remove(const T& value) {
 }
 
 template <typename T>
-bool List<T>::removeAt(int index) {
+bool List<T>::remove_at(int index) {
     if(index < 0 || index >= size) {
         return false;
     }
@@ -302,12 +323,12 @@ bool List<T>::removeAt(int index) {
 
     if(p != &nil) {
         prev->next = p->next;
-        free(p);
+        delete p;
         --size;
 
         return true;
     } else {
-        return false;
+        return false; // should never execute, but to make sure
     }
 }
 
