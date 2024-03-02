@@ -28,8 +28,8 @@ test: $(TEST_PROGRAM)
 $(PROGRAM): $(OBJ)
 	@$(CC) $(CPP_FLAGS) $(OBJ) -o $(PROGRAM)
 
-$(TEST_PROGRAM): $(TEST_OBJ) $(OBJ)
-	@$(CC) $(CPP_FLAGS) $(TEST_OBJ) $(OBJ) -o $(TEST_PROGRAM) $(LIBS)
+$(TEST_PROGRAM): $(TEST_OBJ)
+	@$(CC) $(CPP_FLAGS) $(TEST_OBJ) -o $(TEST_PROGRAM) $(LIBS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
