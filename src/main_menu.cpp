@@ -128,7 +128,9 @@ void main_menu() {
 
 template <typename T>
 void run_menu() {
-    using namespace std;
+    using std::cout;
+    using std::cin;
+    using std::endl;
 
     List<T> myList;
     int choice { 0 };
