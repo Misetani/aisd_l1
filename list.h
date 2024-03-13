@@ -15,6 +15,7 @@ private:
     struct Node {
         T data;
         Node *next;
+
         Node () {}
         Node(const T& value) : data(value), next(nullptr) {}
     };
@@ -91,7 +92,7 @@ public:
     /**
      * @brief Вывод на экран последовательности значений
     */
-    void print() const;
+    void print();
 
     /**
      * @brief Деструктор
@@ -105,12 +106,13 @@ public:
 
     public:
         /**
-         * @brief Конструктор
+         * @brief Конструктор копирования, устанавливаюций текущую позицию на первый элемент списка
         */
-        Iterator(const List<T>& l) : list(l) {
-            current = l.nil.next;
-        }
+        Iterator(const List<T>& l) : list(l) { current = l.nil.next; }
 
+        /**
+         * @brief Конструктор копирования, устанавливаюций текущую позицию на указанный узел
+        */
         Iterator(const List<T>& l, Node *node) : list(l), current(node) {}
 
         /**
@@ -131,6 +133,10 @@ public:
          * @brief Оператор разыменования итератора
         */
         T& operator*() const {
+            if (current == &list.nil) {
+                throw Array_exception("Iterator is at the end");
+            }
+
             return current->data;
         }
 
@@ -333,9 +339,7 @@ bool List<T>::remove_at(int index) {
 }
 
 template <typename T>
-void List<T>::print() const {
-    // лучше всего делать через итераторы, но пока их нет
-    // будем обходиться как можем
+void List<T>::print() {
     std::cout << "List: ";
     Node *p = nil.next;
     while (p != &nil) {
